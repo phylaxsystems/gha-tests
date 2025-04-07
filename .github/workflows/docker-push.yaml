@@ -1,0 +1,18 @@
+name: Docker Images
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  call-docker-build-and-push:
+    name: Run phylax Docker build and Push
+    uses: phylaxsystems/actions/.github/workflows/release-docker-ghcr.yaml@dev
+    with:
+      rust-channel: 'stable'
+      require-lockfile: true
+      rust-binary-name: 'gha-tests'
+      requires-private-deps: true
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
