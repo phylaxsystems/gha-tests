@@ -33,6 +33,11 @@ RUN cargo build --release $BUILD_FLAGS
 
 FROM ubuntu:24.04
 WORKDIR /usr/local/bin
+LABEL org.opencontainers.image.source=https://github.com/phylaxsystems/gha-tests
+LABEL org.opencontainers.image.licenses="MIT OR Apache-2.0"
+
+# Filled by docker buildx
+ARG TARGETARCH
 
 COPY --from=builder /gha-tests/target/release/gha-tests /usr/local/bin/gha-tests
 
