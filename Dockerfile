@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-FROM rustlang/rust:nightly AS chef
+FROM --platform=$BUILDPLATFORM rustlang/rust:nightly AS chef
 
 RUN apt-get update && \
     apt-get install -y clang openssh-client git && \
@@ -9,7 +9,7 @@ RUN cargo install cargo-chef
 
 WORKDIR /gha-tests
 
-FROM chef AS planner
+FROM --platform=$BUILDPLATFORM chef AS planner
 
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
@@ -18,7 +18,7 @@ COPY Cargo.* .
 
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM chef AS builder
+FROM --platform=$BUILDPLATFORM chef AS builder
 
 COPY --from=planner /gha-tests/recipe.json recipe.json
 
@@ -31,7 +31,7 @@ COPY src ./src
 COPY Cargo.* .
 RUN cargo build --release $BUILD_FLAGS
 
-FROM ubuntu:24.04
+FROM --platform=$BUILDPLATFORM ubuntu:24.04
 WORKDIR /usr/local/bin
 LABEL org.opencontainers.image.source=https://github.com/phylaxsystems/gha-tests
 LABEL org.opencontainers.image.licenses="MIT OR Apache-2.0"
