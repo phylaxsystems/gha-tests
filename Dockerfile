@@ -13,7 +13,7 @@ FROM chef AS planner
 
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
-COPY crates ./crates
+COPY src ./src
 COPY Cargo.* .
 
 RUN cargo chef prepare --recipe-path recipe.json
@@ -27,7 +27,7 @@ RUN --mount=type=ssh cargo chef cook --release --recipe-path recipe.json
 
 # Optional build flags
 ARG BUILD_FLAGS=""
-COPY crates ./crates
+COPY src ./src
 COPY Cargo.* .
 RUN cargo build --release $BUILD_FLAGS
 
