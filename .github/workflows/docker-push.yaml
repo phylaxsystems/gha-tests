@@ -1,15 +1,15 @@
-name: Docker Images
-
-on:
-  push:
-    branches:
-      - master
-jobs:
-  call-docker-build-and-push:
-    name: Docker Build and Push
-    uses: phylaxsystems/actions/.github/workflows/release-docker-ghcr.yaml@dev
-    with:
-      rust-channel: 'stable'
-      require-lockfile: true
-      rust-binary-name: 'gha-tests'
-      requires-private-deps: false
+# name: Docker Images
+#
+# on:
+#   push:
+#     branches:
+#       - master
+# jobs:
+#   call-docker-build-and-push:
+#     name: Docker Build and Push
+#     uses: phylaxsystems/actions/.github/workflows/release-docker-ghcr.yaml@dev
+#     with:
+#       rust-channel: 'stable'
+#       require-lockfile: true
+#       rust-binary-name: 'gha-tests'
+#       requires-private-deps: false
