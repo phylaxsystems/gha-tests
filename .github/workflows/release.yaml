@@ -1,0 +1,53 @@
+name: Release and Publish
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      # This output can be used to get the binary name from Cargo.toml if you want.
+      # For now, we'll just check the version.
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version matches tag
+        id: check
+        run: |
+          # github.ref_name holds the tag name that triggered the workflow
+          TAG_VERSION="${{ github.ref_name }}"
+          
+          # Clean up the tag if it has a 'v' prefix
+          if [[ $TAG_VERSION == v* ]]; then
+            TAG_VERSION="${TAG_VERSION:1}"
+          fi
+
+          CARGO_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f2)
+
+          echo "version=${CARGO_VERSION}" >> $GITHUB_OUTPUT
+
+          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
+            echo "Version mismatch: Tag version ($TAG_VERSION) does not match Cargo.toml version ($CARGO_VERSION)"
+            exit 1
+          fi
+
+  # This single job now handles creating the release, building, and uploading the binaries.
+  release-binary:
+    needs: check-version
+    permissions:
+      contents: write # Required to create releases and upload assets
+    # Call the consolidated workflow from your central actions repository
+    uses: phylaxsystems/actions/.github/workflows/release-binary-rust.yaml@feat/rust-bins
+    with:
+      binary-name: 'gha-tests'
+
+      # The tag to use is automatically inferred from the event, so you don't need to set it.
+      # All other options (like release_name, generate_release_notes, etc.)
+      # will use the sensible defaults you defined in the reusable workflow.
+
+    secrets:
+      # This secret must be configured in the settings of the repository using this workflow.
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
