@@ -8,10 +8,6 @@ on:
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    outputs:
-      # This output can be used to get the binary name from Cargo.toml if you want.
-      # For now, we'll just check the version.
-      version: ${{ steps.check.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: Check version matches tag
@@ -37,13 +33,10 @@ jobs:
   # This single job now handles creating the release, building, and uploading the binaries.
   build-binary:
     needs: check-version
-    permissions:
-      contents: write # Required to create releases and upload assets
-    # Call the consolidated workflow from your central actions repository
-    uses: phylaxsystems/actions/.github/workflows/rust-build-binary.yaml@feat/rust-bins
+    uses: phylaxsystems/actions/.github/workflows/rust-build-binary.yaml@main
     with:
       binary-name: "gha-tests"
-      artifact_name: "gha-tests"
+      artifact_name: "gha-tests-${{ github.ref_name }}"
 
       # The tag to use is automatically inferred from the event, so you don't need to set it.
       # All other options (like release_name, generate_release_notes, etc.)
@@ -51,9 +44,11 @@ jobs:
 
   release-github:
     needs: build-binary
-    uses: phylaxsystems/actions/.github/workflows/release-github.yaml@feat/rust-bins
+    uses: phylaxsystems/actions/.github/workflows/release-github.yaml@main
+    permissions:
+      contents: write
     with:
-      artifact_name: "gha-tests"
+      artifact_name: "gha-tests-${{ github.ref_name }}"
       release_name: "gha-tests"
       generate_release_notes: true
       draft: false
