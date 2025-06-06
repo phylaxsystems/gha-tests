@@ -49,10 +49,6 @@ jobs:
       # All other options (like release_name, generate_release_notes, etc.)
       # will use the sensible defaults you defined in the reusable workflow.
 
-    secrets:
-      # This secret must be configured in the settings of the repository using this workflow.
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
   release-github:
     needs: build-binary
     uses: phylaxsystems/actions/.github/workflows/release-github.yaml@feat/rust-bins
