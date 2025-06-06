@@ -19,7 +19,7 @@ jobs:
         run: |
           # github.ref_name holds the tag name that triggered the workflow
           TAG_VERSION="${{ github.ref_name }}"
-          
+
           # Clean up the tag if it has a 'v' prefix
           if [[ $TAG_VERSION == v* ]]; then
             TAG_VERSION="${TAG_VERSION:1}"
@@ -35,14 +35,15 @@ jobs:
           fi
 
   # This single job now handles creating the release, building, and uploading the binaries.
-  release-binary:
+  build-binary:
     needs: check-version
     permissions:
       contents: write # Required to create releases and upload assets
     # Call the consolidated workflow from your central actions repository
-    uses: phylaxsystems/actions/.github/workflows/release-binary-rust.yaml@feat/rust-bins
+    uses: phylaxsystems/actions/.github/workflows/rust-build-binary.yaml@feat/rust-bins
     with:
-      binary-name: 'gha-tests'
+      binary-name: "gha-tests"
+      artifact_name: "gha-tests"
 
       # The tag to use is automatically inferred from the event, so you don't need to set it.
       # All other options (like release_name, generate_release_notes, etc.)
@@ -50,4 +51,16 @@ jobs:
 
     secrets:
       # This secret must be configured in the settings of the repository using this workflow.
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+  release-github:
+    needs: build-binary
+    uses: phylaxsystems/actions/.github/workflows/release-github.yaml@feat/rust-bins
+    with:
+      artifact_name: "gha-tests"
+      release_name: "gha-tests"
+      generate_release_notes: true
+      draft: false
+      prerelease: false
+    secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
